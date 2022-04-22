@@ -10,6 +10,7 @@ extension ImageProcessors {
     public struct Resize: ImageProcessing, Hashable, CustomStringConvertible {
         private let size: Size
         private let contentMode: ContentMode
+        private let alignment: Alignment
         private let crop: Bool
         private let upscale: Bool
 
@@ -30,6 +31,18 @@ extension ImageProcessors {
                 }
             }
         }
+        
+        public enum Alignment {
+            case center
+            case top
+            case bottom
+            case left
+            case right
+            case topLeft
+            case topRight
+            case bottomLeft
+            case bottomRight
+        }
 
         /// Initializes the processor with the given size.
         ///
@@ -39,9 +52,10 @@ extension ImageProcessors {
         /// - parameter crop: If `true` will crop the image to match the target size.
         /// Does nothing with content mode .aspectFill. `false` by default.
         /// - parameter upscale: `false` by default.
-        public init(size: CGSize, unit: ImageProcessingOptions.Unit = .points, contentMode: ContentMode = .aspectFill, crop: Bool = false, upscale: Bool = false) {
+        public init(size: CGSize, unit: ImageProcessingOptions.Unit = .points, contentMode: ContentMode = .aspectFill, alignment: Alignment = .center, crop: Bool = false, upscale: Bool = false) {
             self.size = Size(size: size, unit: unit)
             self.contentMode = contentMode
+            self.alignment = alignment
             self.crop = crop
             self.upscale = upscale
         }
@@ -52,7 +66,7 @@ extension ImageProcessors {
         /// - parameter unit: Unit of the target size, `.points` by default.
         /// - parameter upscale: `false` by default.
         public init(width: CGFloat, unit: ImageProcessingOptions.Unit = .points, upscale: Bool = false) {
-            self.init(size: CGSize(width: width, height: 9999), unit: unit, contentMode: .aspectFit, crop: false, upscale: upscale)
+            self.init(size: CGSize(width: width, height: 9999), unit: unit, contentMode: .aspectFit, alignment: .center, crop: false, upscale: upscale)
         }
 
         /// Scales an image to the given height preserving aspect ratio.
@@ -61,12 +75,12 @@ extension ImageProcessors {
         /// - parameter unit: Unit of the target size, `.points` by default.
         /// - parameter upscale: `false` by default.
         public init(height: CGFloat, unit: ImageProcessingOptions.Unit = .points, upscale: Bool = false) {
-            self.init(size: CGSize(width: 9999, height: height), unit: unit, contentMode: .aspectFit, crop: false, upscale: upscale)
+            self.init(size: CGSize(width: 9999, height: height), unit: unit, contentMode: .aspectFit, alignment: .center, crop: false, upscale: upscale)
         }
 
         public func process(_ image: PlatformImage) -> PlatformImage? {
             if crop && contentMode == .aspectFill {
-                return image.processed.byResizingAndCropping(to: size.cgSize)
+                return image.processed.byResizingAndCropping(to: size.cgSize, alignment: alignment)
             }
             return image.processed.byResizing(to: size.cgSize, contentMode: contentMode, upscale: upscale)
         }

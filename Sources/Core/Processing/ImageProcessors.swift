@@ -30,7 +30,7 @@ extension ImageProcessing where Self == ImageProcessors.Resize {
     /// Does nothing with content mode .aspectFill. `false` by default.
     /// - parameter upscale: `false` by default.
     public static func resize(size: CGSize, unit: ImageProcessingOptions.Unit = .points, contentMode: ImageProcessors.Resize.ContentMode = .aspectFill, crop: Bool = false, upscale: Bool = false) -> ImageProcessors.Resize {
-        ImageProcessors.Resize(size: size, unit: unit, contentMode: contentMode, crop: crop, upscale: upscale)
+        ImageProcessors.Resize(size: size, unit: unit, contentMode: contentMode, alignment: .center, crop: crop, upscale: upscale)
     }
     
     /// Scales an image to the given width preserving aspect ratio.

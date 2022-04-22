@@ -46,7 +46,8 @@ struct ImageProcessingExtensions {
 
     /// Crops the input image to the given size and resizes it if needed.
     /// - note: this method will always upscale.
-    func byResizingAndCropping(to targetSize: CGSize) -> PlatformImage? {
+    func byResizingAndCropping(to targetSize: CGSize,
+                               alignment: ImageProcessors.Resize.Alignment) -> PlatformImage? {
         guard let cgImage = image.cgImage else {
             return nil
         }
@@ -55,7 +56,7 @@ struct ImageProcessingExtensions {
         #endif
         let scale = cgImage.size.getScale(targetSize: targetSize, contentMode: .aspectFill)
         let scaledSize = cgImage.size.scaled(by: scale)
-        let drawRect = scaledSize.centeredInRectWithSize(targetSize)
+        let drawRect = scaledSize.scaledInRectWithSize(targetSize, alignment: alignment)
         return image.draw(inCanvasWithSize: targetSize, drawRect: drawRect)
     }
 
@@ -210,12 +211,51 @@ extension CGSize {
 
     /// Calculates a rect such that the output rect will be in the center of
     /// the rect of the input size (assuming origin: .zero)
-    func centeredInRectWithSize(_ targetSize: CGSize) -> CGRect {
-        // First, resize the original size to fill the target size.
-        CGRect(origin: .zero, size: self).offsetBy(
-            dx: -(width - targetSize.width) / 2,
-            dy: -(height - targetSize.height) / 2
-        )
+    func scaledInRectWithSize(_ targetSize: CGSize, alignment: ImageProcessors.Resize.Alignment) -> CGRect {
+        switch alignment {
+        case .center:
+            return CGRect(origin: .zero, size: self).offsetBy(
+                dx: (targetSize.width - width) / 2,
+                dy: (targetSize.height - height) / 2
+            )
+        case .top:
+            return CGRect(origin: .zero, size: self).offsetBy(
+                dx: (targetSize.width - width) / 2,
+                dy: targetSize.height - height
+            )
+        case .bottom:
+            return CGRect(origin: .zero, size: self).offsetBy(
+                dx: (targetSize.width - width) / 2,
+                dy: 0
+            )
+        case .left:
+            return CGRect(origin: .zero, size: self).offsetBy(
+                dx: 0,
+                dy: (targetSize.height - height) / 2
+            )
+        case .right:
+            return CGRect(origin: .zero, size: self).offsetBy(
+                dx: targetSize.width - width,
+                dy: (targetSize.height - height) / 2
+            )
+        case .topLeft:
+            return CGRect(origin: .zero, size: self).offsetBy(
+                dx: 0,
+                dy: targetSize.height - height
+            )
+        case .topRight:
+            return CGRect(origin: .zero, size: self).offsetBy(
+                dx: targetSize.width - width,
+                dy: targetSize.height - height
+            )
+        case .bottomLeft:
+            return CGRect(origin: .zero, size: self)
+        case .bottomRight:
+            return CGRect(origin: .zero, size: self).offsetBy(
+                dx: targetSize.width - width,
+                dy: 0
+            )
+        }
     }
 }
 
